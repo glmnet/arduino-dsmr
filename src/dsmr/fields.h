@@ -210,7 +210,9 @@ namespace dsmr
       static constexpr char dm3[] = "dm3";
       static constexpr char GJ[] = "GJ";
       static constexpr char MJ[] = "MJ";
+      static constexpr char var[] = "var";
       static constexpr char kvar[] = "kvar";
+      static constexpr char varh[] = "varh";
       static constexpr char kvarh[] = "kvarh";
     };
 
