@@ -284,7 +284,7 @@ namespace dsmr
     DEFINE_FIELD(energy_delivered_tariff1, FixedValue, ObisId(1, 0, 1, 8, 1), FixedField, units::kWh, units::Wh);
     /* Meter Reading electricity delivered to client (Tariff 2) in 0,001 kWh */
     DEFINE_FIELD(energy_delivered_tariff2, FixedValue, ObisId(1, 0, 1, 8, 2), FixedField, units::kWh, units::Wh);
-    /* Meter Reading electricity delivered to client (Tariff 3) in 0,001 kWh *
+    /* Meter Reading electricity delivered to client (Tariff 3) in 0,001 kWh */
     DEFINE_FIELD(energy_delivered_tariff3, FixedValue, ObisId(1, 0, 1, 8, 3), FixedField, units::kWh, units::Wh);
     /* Meter Reading electricity delivered to client (Tariff 4) in 0,001 kWh */
     DEFINE_FIELD(energy_delivered_tariff4, FixedValue, ObisId(1, 0, 1, 8, 4), FixedField, units::kWh, units::Wh);
@@ -437,11 +437,11 @@ namespace dsmr
     DEFINE_FIELD(power_returned_l3, FixedValue, ObisId(1, 0, 62, 7, 0), FixedField, units::kW, units::W);
 
     /* Instantaneous current (I) [A] */
-    DEFINE_FIELD(current, FixedValue, ObisId(1, 0, 11, 7, 0), FixedField, units::kA, units::A);
+    DEFINE_FIELD(current, FixedValue, ObisId(1, 0, 11, 7, 0), FixedField, units::A, units::mA);
     /* Instantaneous current (I) in neutral [A] */
-    DEFINE_FIELD(current_n, FixedValue, ObisId(1, 0, 91, 7, 0), FixedField, units::kA, units::A);
+    DEFINE_FIELD(current_n, FixedValue, ObisId(1, 0, 91, 7, 0), FixedField, units::A, units::mA);
     /* Instantaneous sum of all phase current's  (I) [A] */
-    DEFINE_FIELD(current_sum, FixedValue, ObisId(1, 0, 90, 7, 0), FixedField, units::kA, units::A);
+    DEFINE_FIELD(current_sum, FixedValue, ObisId(1, 0, 90, 7, 0), FixedField, units::A, units::mA);
 
     /*
  * LUX and Lithuania
