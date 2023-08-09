@@ -160,7 +160,8 @@ need, to make the parsing and printing code smaller and faster.
 
 Some values are parsed to an Arduino `String` value or C++ integer type,
 those should be fairly straightforward. There are three special types
-that need some explanation: `FixedValue` and `TimestampedFixedValue`.
+that need some explanation: `FixedValue`, `TimestampedFixedValue` and
+`HexStringField`.
 
 When looking at the DSMR P1 format, it defines a floating point format.
 It is described as `Fn(x,y)`, where `n` is the total number of (decimal)
@@ -200,6 +201,15 @@ message (YYMMDDhhmmssX, where X is S or W for summer- or wintertime).
 Parsing these into something like a UNIX timestamp is tricky (think
 leap years and seconds) and of limited use, so this just keeps the
 original format.
+
+The final one `HexStringField` is a smart version of the StringField
+parser and is only used for equipment id's as in practise these are
+often hex coded strings instead of a normal strings. If the given
+string is indeed a hex coding, the decoded string is returned else
+the original string is returned.
+
+    0-0:96.1.1(4530303639303030373138323035333231)
+    E0069000718205321
 
 ## Connecting the P1 port
 
