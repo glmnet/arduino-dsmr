@@ -417,6 +417,30 @@ constexpr char active_energy_import_current_average_demand::name[];
 constexpr ObisId active_energy_export_current_average_demand::id;
 constexpr char active_energy_export_current_average_demand::name[];
 
+constexpr ObisId apparent_energy_import_current_average_demand::id;
+constexpr char apparent_energy_import_current_average_demand::name[];
+
+constexpr ObisId apparent_energy_export_current_average_demand::id;
+constexpr char apparent_energy_export_current_average_demand::name[];
+
+constexpr ObisId active_energy_import_last_completed_demand::id;
+constexpr char active_energy_import_last_completed_demand::name[];
+
+constexpr ObisId active_energy_export_last_completed_demand::id;
+constexpr char active_energy_export_last_completed_demand::name[];
+
+constexpr ObisId reactive_energy_import_last_completed_demand::id;
+constexpr char reactive_energy_import_last_completed_demand::name[];
+
+constexpr ObisId reactive_energy_export_last_completed_demand::id;
+constexpr char reactive_energy_export_last_completed_demand::name[];
+
+constexpr ObisId apparent_energy_import_last_completed_demand::id;
+constexpr char apparent_energy_import_last_completed_demand::name[];
+
+constexpr ObisId apparent_energy_export_last_completed_demand::id;
+constexpr char apparent_energy_export_last_completed_demand::name[];
+
 constexpr ObisId active_energy_import_maximum_demand_running_month::id;
 constexpr char active_energy_import_maximum_demand_running_month::name[];
 
