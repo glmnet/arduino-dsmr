@@ -157,29 +157,69 @@ namespace dsmr
     }
   };
 
-  // Take the last value of multiple values
-  // e.g. 0-0:98.1.0(1)(1-0:1.6.0)(1-0:1.6.0)(230201000000W)(230117224500W)(04.329*kW)
+  // Take the average value of multiple values...
+  // e.g. 0-0:98.1.0(2)(1-0:1.6.0)(1-0:1.6.0)(230201000000W)(230117224500W)(04.329*kW)(230202000000W)(230214224500W)(04.529*kW)
   template <typename T, const char *_unit, const char *_int_unit>
-  struct LastFixedField : public FixedField<T, _unit, _int_unit>
+  struct AveragedFixedField : public FixedField<T, _unit, _int_unit>
   {
     ParseResult<void> parse(const char *str, const char *end)
     {
-      // we parse last entry 2 times
-      const char *last = end;
+      // get the number of values that are available in the data
+      ParseResult<uint32_t>  numberOfValues = NumParser::parse(0, "", str, end);
+      if (!numberOfValues.err) {
 
-      ParseResult<String> res;
-      res.next = str;
+        // (we do not need)
+        ParseResult<String> res = StringParser::parse_string(1, 20, numberOfValues.next, end);
+        if (res.err)
+          return res;
 
-      while (res.next != end)
-      {
-        last = res.next;
+        // (we do not need)
         res = StringParser::parse_string(1, 20, res.next, end);
         if (res.err)
           return res;
-      } 
 
-      // (04.329*kW) Which is followed by the numerical value
-      return FixedField<T, _unit, _int_unit>::parse(last, end);
+        ParseResult<uint32_t> result;
+        result.succeed(0);
+        result.next = res.next; // set value in case there are no samples
+
+        if (numberOfValues.result)
+        {
+          // numberOfValues values
+          auto next = res.next;
+          for (uint32 i = 0; i < numberOfValues.result; i++)
+          {
+            // first date (we do not need)
+            res = StringParser::parse_string(1, 20, next, end);
+            if (res.err)
+              return res;// return the error
+
+            // second date( we do not need)
+            res = StringParser::parse_string(1, 20, res.next, end);
+            if (res.err)
+              return res;// return the error
+                      
+            // next we have the amount used in that month
+            
+            ParseResult<uint32_t>  monthValue = NumParser::parse(3, _unit, res.next, end);
+
+            if (monthValue.err)
+              return monthValue;// return the error
+            next = monthValue.next;
+
+            // set next on result
+            result.next = monthValue.next;
+            // make sum 
+            result.result += monthValue.result; //
+          }
+          // make average
+          result.result /= numberOfValues.result;
+        }
+
+        static_cast<T *>(this)->val()._value = result.result; // store the value
+
+        return result; // return the result
+      }
+      return numberOfValues;// return the error
     }
   };
 
@@ -572,7 +612,7 @@ namespace dsmr
     /*Maximum energy consumption from the current month*/
     DEFINE_FIELD(active_energy_import_maximum_demand_running_month, TimestampedFixedValue, ObisId(1, 0, 1, 6, 0), TimestampedFixedField, units::kW, units::W);
     /*Maximum energy consumption from the last 13 months*/
-    DEFINE_FIELD(active_energy_import_maximum_demand_last_13_months, FixedValue, ObisId(0, 0, 98, 1, 0), LastFixedField, units::kW, units::W);
+    DEFINE_FIELD(active_energy_import_maximum_demand_last_13_months, FixedValue, ObisId(0, 0, 98, 1, 0), AveragedFixedField, units::kW, units::W);
 
     /* Image Core Version and checksum */
     DEFINE_FIELD(fw_core_version, FixedValue, ObisId(1, 0, 0, 2, 0), FixedField, units::none, units::none);
