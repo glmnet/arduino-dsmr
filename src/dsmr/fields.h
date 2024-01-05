@@ -185,11 +185,10 @@ namespace dsmr
         if (numberOfValues.result)
         {
           // numberOfValues values
-          auto next = res.next;
           for (uint32 i = 0; i < numberOfValues.result; i++)
           {
             // first date (we do not need)
-            res = StringParser::parse_string(1, 20, next, end);
+            res = StringParser::parse_string(1, 20, result.next, end);
             if (res.err)
               return res;// return the error
 
@@ -204,12 +203,11 @@ namespace dsmr
 
             if (monthValue.err)
               return monthValue;// return the error
-            next = monthValue.next;
 
             // set next on result
             result.next = monthValue.next;
             // make sum 
-            result.result += monthValue.result; //
+            result.result += monthValue.result;
           }
           // make average
           result.result /= numberOfValues.result;
