@@ -70,6 +70,10 @@ constexpr char p1_version::name[];
 constexpr ObisId p1_version_be::id;
 constexpr char p1_version_be::name[];
 
+/* extra field for Switzerland */
+constexpr ObisId p1_version_ch::id;
+constexpr char p1_version_ch::name[];
+
 constexpr ObisId timestamp::id;
 constexpr char timestamp::name[];
 
@@ -104,6 +108,14 @@ constexpr char reactive_energy_delivered_tariff3::name[];
 constexpr ObisId reactive_energy_delivered_tariff4::id;
 constexpr char reactive_energy_delivered_tariff4::name[];
 
+/* specific for Switzerland */
+constexpr ObisId energy_delivered_tariff1_ch::id;
+constexpr char energy_delivered_tariff1_ch::name[];
+
+/* specific for Switzerland */
+constexpr ObisId energy_delivered_tariff2_ch::id;
+constexpr char energy_delivered_tariff2_ch::name[];
+
 /* extra for Lux */
 constexpr ObisId energy_returned_lux::id;
 constexpr char energy_returned_lux::name[];
@@ -132,6 +144,14 @@ constexpr char reactive_energy_returned_tariff3::name[];
 constexpr ObisId reactive_energy_returned_tariff4::id;
 constexpr char reactive_energy_returned_tariff4::name[];
 
+/* specific for Switzerland */
+constexpr ObisId energy_returned_tariff1_ch::id;
+constexpr char energy_returned_tariff1_ch::name[];
+
+/* specific for Switzerland */
+constexpr ObisId energy_returned_tariff2_ch::id;
+constexpr char energy_returned_tariff2_ch::name[];
+
 /* extra for Lux */
 constexpr ObisId total_imported_energy::id;
 constexpr char total_imported_energy::name[];
@@ -156,6 +176,14 @@ constexpr char power_delivered::name[];
 
 constexpr ObisId power_returned::id;
 constexpr char power_returned::name[];
+
+/* specific for Switzerland */
+constexpr ObisId power_delivered_ch::id;
+constexpr char power_delivered_ch::name[];
+
+/* specific for Switzerland */
+constexpr ObisId power_returned_ch::id;
+constexpr char power_returned_ch::name[];
 
 constexpr ObisId electricity_threshold::id;
 constexpr char electricity_threshold::name[];

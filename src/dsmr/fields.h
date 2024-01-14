@@ -270,6 +270,7 @@ namespace dsmr
     /* Version information for P1 output */
     DEFINE_FIELD(p1_version, String, ObisId(1, 3, 0, 2, 8), StringField, 2, 2);
     DEFINE_FIELD(p1_version_be, String, ObisId(0, 0, 96, 1, 4), StringField, 2, 96);
+    DEFINE_FIELD(p1_version_ch, String, ObisId(0, 0, 96, 1, 4), StringField, 2, 96);
 
     /* Date-time stamp of the P1 message */
     DEFINE_FIELD(timestamp, String, ObisId(0, 0, 1, 0, 0), TimestampField);
@@ -322,6 +323,18 @@ namespace dsmr
     /* Meter Reading Reactive energy delivered by client (Tariff 4) in 0,001 kvarh */
     DEFINE_FIELD(reactive_energy_returned_tariff4, FixedValue, ObisId(1, 0, 4, 8, 4), FixedField, units::kvarh, units::kvarh);
 
+    /*
+ * Specific fields used for Switzerland
+ */
+    /* Meter Reading electricity delivered to client (Tariff 1) in 0,001 kWh */
+    DEFINE_FIELD(energy_delivered_tariff1_ch, FixedValue, ObisId(1, 1, 1, 8, 1), FixedField, units::kWh, units::Wh);
+    /* Meter Reading electricity delivered to client (Tariff 2) in 0,001 kWh */
+    DEFINE_FIELD(energy_delivered_tariff2_ch, FixedValue, ObisId(1, 1, 1, 8, 2), FixedField, units::kWh, units::Wh);
+    /* Meter Reading electricity delivered by client (Tariff 1) in 0,001 kWh */
+    DEFINE_FIELD(energy_returned_tariff1_ch, FixedValue, ObisId(1, 1, 2, 8, 1), FixedField, units::kWh, units::Wh);
+    /* Meter Reading electricity delivered by client (Tariff 2) in 0,001 kWh */
+    DEFINE_FIELD(energy_returned_tariff2_ch, FixedValue, ObisId(1, 1, 2, 8, 2), FixedField, units::kWh, units::Wh);
+
     /* Tariff indicator electricity. The tariff indicator can also be used
  * to switch tariff dependent loads e.g boilers. This is the
  * responsibility of the P1 user */
@@ -337,6 +350,14 @@ namespace dsmr
  */
     DEFINE_FIELD(reactive_power_delivered, FixedValue, ObisId(1, 0, 3, 7, 0), FixedField, units::kvar, units::kvar);
     DEFINE_FIELD(reactive_power_returned, FixedValue, ObisId(1, 0, 4, 7, 0), FixedField, units::kvar, units::kvar);
+
+    /*
+ * Specific fields used for Switzerland
+ */
+    /* Actual electricity power delivered (+P) in 1 Watt resolution */
+    DEFINE_FIELD(power_delivered_ch, FixedValue, ObisId(1, 1, 1, 7, 0), FixedField, units::kW, units::W);
+    /* Actual electricity power received (-P) in 1 Watt resolution */
+    DEFINE_FIELD(power_returned_ch, FixedValue, ObisId(1, 1, 2, 7, 0), FixedField, units::kW, units::W);
 
     /* The actual threshold Electricity in kW. Removed in 4.0.7 / 4.2.2 / 5.0 */
     DEFINE_FIELD(electricity_threshold, FixedValue, ObisId(0, 0, 17, 0, 0), FixedField, units::kW, units::W);
