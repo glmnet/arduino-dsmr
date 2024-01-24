@@ -185,7 +185,7 @@ namespace dsmr
         if (numberOfValues.result)
         {
           // numberOfValues values
-          for (uint32 i = 0; i < numberOfValues.result; i++)
+          for (uint32_t i = 0; i < numberOfValues.result; i++)
           {
             // first date (we do not need)
             res = StringParser::parse_string(1, 20, result.next, end);
