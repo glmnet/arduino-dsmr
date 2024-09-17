@@ -5,7 +5,7 @@
   "keywords": "dsmr",
   "repository": {
     "type": "git",
-    "url": "https://github.com/glmnet/arduino-dsmr.git"
+    "url": "https://github.com/teerytko/arduino-dsmr.git"
   },
   "license": "MIT",
   "exclude": ["specs/"]

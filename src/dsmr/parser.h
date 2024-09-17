@@ -405,8 +405,9 @@ namespace dsmr
           // passed '3' here (which is mandatory for "mode D"
           // communication according to 62956-21), so we also allow
           // that.
-          if (line_start + 3 >= line_end || (line_start[3] != '5' && line_start[3] != '3'))
-            return res.fail("Invalid identification string", line_start);
+          // Add Elenia H1 port identfier support ADN9
+          if (line_start + 3 >= line_end || (line_start[3] != '5' && line_start[3] != '3' && line_start[3] != '9'))
+            return res.fail("Invalid identification string, TeemuR: ", line_start);
           // Offer it for processing using the all-ones Obis ID, which
           // is not otherwise valid.
           ParseResult<void> tmp = data->parse_line(ObisId(255, 255, 255, 255, 255, 255), line_start, line_end);
