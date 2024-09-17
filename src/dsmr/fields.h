@@ -238,7 +238,9 @@ namespace dsmr
       static constexpr char dm3[] = "dm3";
       static constexpr char GJ[] = "GJ";
       static constexpr char MJ[] = "MJ";
+      static constexpr char var[] = "var";
       static constexpr char kvar[] = "kvar";
+      static constexpr char varh[] = "varh";
       static constexpr char kvarh[] = "kvarh";
       static constexpr char kVA[] = "kVA";
       static constexpr char VA[] = "VA";
@@ -301,9 +303,9 @@ namespace dsmr
     /* Meter Reading electricity delivered by client (Tariff 2) in 0,001 kWh */
     DEFINE_FIELD(energy_returned_tariff4, FixedValue, ObisId(1, 0, 2, 8, 4), FixedField, units::kWh, units::Wh);
     /*
- * Extra fields used for Luxembourg and Lithuania
+ * Extra fields used for Luxembourg, Lithuania and Austria
  */
-    DEFINE_FIELD(total_imported_energy, FixedValue, ObisId(1, 0, 3, 8, 0), FixedField, units::kvarh, units::kvarh);
+    DEFINE_FIELD(total_imported_energy, FixedValue, ObisId(1, 0, 3, 8, 0), FixedField, units::kvarh, units::varh);
     /* Meter Reading Reactive energy delivered to client (Tariff 1) in 0,001 kvarh */
     DEFINE_FIELD(reactive_energy_delivered_tariff1, FixedValue, ObisId(1, 0, 3, 8, 1), FixedField, units::kvarh, units::kvarh);
     /* Meter Reading Reactive energy delivered to client (Tariff 2) in 0,001 kvarh */
@@ -313,7 +315,7 @@ namespace dsmr
     /* Meter Reading Reactive energy delivered to client (Tariff 4) in 0,001 kvarh */
     DEFINE_FIELD(reactive_energy_delivered_tariff4, FixedValue, ObisId(1, 0, 3, 8, 4), FixedField, units::kvarh, units::kvarh);
 
-    DEFINE_FIELD(total_exported_energy, FixedValue, ObisId(1, 0, 4, 8, 0), FixedField, units::kvarh, units::kvarh);
+    DEFINE_FIELD(total_exported_energy, FixedValue, ObisId(1, 0, 4, 8, 0), FixedField, units::kvarh, units::varh);
     /* Meter Reading Reactive energy delivered by client (Tariff 1) in 0,001 kvarh */
     DEFINE_FIELD(reactive_energy_returned_tariff1, FixedValue, ObisId(1, 0, 4, 8, 1), FixedField, units::kvarh, units::kvarh);
     /* Meter Reading Reactive energy delivered by client (Tariff 2) in 0,001 kvarh */
@@ -346,10 +348,10 @@ namespace dsmr
     DEFINE_FIELD(power_returned, FixedValue, ObisId(1, 0, 2, 7, 0), FixedField, units::kW, units::W);
 
     /*
- * Extra fields used for Luxembourg and Lithuania
+ * Extra fields used for Luxembourg, Lithuania and Austria
  */
-    DEFINE_FIELD(reactive_power_delivered, FixedValue, ObisId(1, 0, 3, 7, 0), FixedField, units::kvar, units::kvar);
-    DEFINE_FIELD(reactive_power_returned, FixedValue, ObisId(1, 0, 4, 7, 0), FixedField, units::kvar, units::kvar);
+    DEFINE_FIELD(reactive_power_delivered, FixedValue, ObisId(1, 0, 3, 7, 0), FixedField, units::kvar, units::var);
+    DEFINE_FIELD(reactive_power_returned, FixedValue, ObisId(1, 0, 4, 7, 0), FixedField, units::kvar, units::var);
 
     /*
  * Specific fields used for Switzerland
