@@ -73,6 +73,41 @@ namespace dsmr
     }
   };
 
+  // A hexstring field is essencially a string filled with hex digits. If the
+  // string does not consist of an even number of hex digits, the original
+  // string is returned, otherwise the decoded hex string is returned.
+  template <typename T, size_t minlen, size_t maxlen>
+  struct HexStringField : ParsedField<T>
+  {
+    ParseResult<void> parse(const char *str, const char *end)
+    {
+      ParseResult<String> res = StringParser::parse_string(minlen, maxlen, str, end);
+      if (!res.err) {
+        static_cast<T *>(this)->val() = res.result;
+
+        if (res.result.length() & 1) {
+          // Odd number of chars, can't be a hex coded string.
+          return res;
+        }
+        if (!std::all_of(res.result.begin(), res.result.end(), [](const char ch){ return isxdigit(ch); })) {
+          // Not all chars are hex digits.
+          return res;
+        }
+        String hexStr;
+        hexStr.reserve(res.result.length()/2);
+        for (auto it = res.result.begin(); it != res.result.end(); ++it) {
+          const unsigned char ch1 = static_cast<unsigned const char>(*it++);
+          const unsigned char ch2 = static_cast<unsigned const char>(*it);
+          uint8_t val = (isdigit(ch1) ? ch1 - '0' : toupper(ch1) - 'A' + 10) * 16 +
+                        (isdigit(ch2) ? ch2 - '0' : toupper(ch2) - 'A' + 10);
+          hexStr.concat(static_cast<char>(val));
+        }
+        static_cast<T *>(this)->val() = hexStr;
+      }
+      return res;
+    }
+  };
+
   // A timestamp is essentially a string using YYMMDDhhmmssX format (where
   // X is W or S for wintertime or summertime). Parsing this into a proper
   // (UNIX) timestamp is hard to do generically. Parsing it into a
@@ -276,7 +311,7 @@ namespace dsmr
     DEFINE_FIELD(timestamp, String, ObisId(0, 0, 1, 0, 0), TimestampField);
 
     /* Equipment identifier */
-    DEFINE_FIELD(equipment_id, String, ObisId(0, 0, 96, 1, 1), StringField, 0, 96);
+    DEFINE_FIELD(equipment_id, String, ObisId(0, 0, 96, 1, 1), HexStringField, 0, 96);
 
     /* Meter Reading electricity delivered to client (Special for Lux) in 0,001 kWh */
     /* TODO: by OBIS 1-0:1.8.0.255 IEC 62056 it should be Positive active energy (A+) total [kWh], should we rename it? */
@@ -516,9 +551,9 @@ namespace dsmr
     DEFINE_FIELD(gas_device_type, uint16_t, ObisId(0, GAS_MBUS_ID, 24, 1, 0), IntField, units::none);
 
     /* Equipment identifier (Gas) */
-    DEFINE_FIELD(gas_equipment_id, String, ObisId(0, GAS_MBUS_ID, 96, 1, 0), StringField, 0, 96);
+    DEFINE_FIELD(gas_equipment_id, String, ObisId(0, GAS_MBUS_ID, 96, 1, 0), HexStringField, 0, 96);
     /* Equipment identifier (Gas) BE */
-    DEFINE_FIELD(gas_equipment_id_be, String, ObisId(0, GAS_MBUS_ID, 96, 1, 1), StringField, 0, 96);
+    DEFINE_FIELD(gas_equipment_id_be, String, ObisId(0, GAS_MBUS_ID, 96, 1, 1), HexStringField, 0, 96);
 
     /* Valve position Gas (on/off/released) (Note: Removed in 4.0.7 / 4.2.2 / 5.0). */
     DEFINE_FIELD(gas_valve_position, uint8_t, ObisId(0, GAS_MBUS_ID, 24, 4, 0), IntField, units::none);
@@ -537,7 +572,7 @@ namespace dsmr
     DEFINE_FIELD(thermal_device_type, uint16_t, ObisId(0, THERMAL_MBUS_ID, 24, 1, 0), IntField, units::none);
 
     /* Equipment identifier (Thermal: heat or cold) */
-    DEFINE_FIELD(thermal_equipment_id, String, ObisId(0, THERMAL_MBUS_ID, 96, 1, 0), StringField, 0, 96);
+    DEFINE_FIELD(thermal_equipment_id, String, ObisId(0, THERMAL_MBUS_ID, 96, 1, 0), HexStringField, 0, 96);
 
     /* Valve position (on/off/released) (Note: Removed in 4.0.7 / 4.2.2 / 5.0). */
     DEFINE_FIELD(thermal_valve_position, uint8_t, ObisId(0, THERMAL_MBUS_ID, 24, 4, 0), IntField, units::none);
@@ -551,7 +586,7 @@ namespace dsmr
     DEFINE_FIELD(water_device_type, uint16_t, ObisId(0, WATER_MBUS_ID, 24, 1, 0), IntField, units::none);
 
     /* Equipment identifier (Thermal: heat or cold) */
-    DEFINE_FIELD(water_equipment_id, String, ObisId(0, WATER_MBUS_ID, 96, 1, 0), StringField, 0, 96);
+    DEFINE_FIELD(water_equipment_id, String, ObisId(0, WATER_MBUS_ID, 96, 1, 0), HexStringField, 0, 96);
 
     /* Valve position (on/off/released) (Note: Removed in 4.0.7 / 4.2.2 / 5.0). */
     DEFINE_FIELD(water_valve_position, uint8_t, ObisId(0, WATER_MBUS_ID, 24, 4, 0), IntField, units::none);
@@ -565,7 +600,7 @@ namespace dsmr
     DEFINE_FIELD(sub_device_type, uint16_t, ObisId(0, SUB_MBUS_ID, 24, 1, 0), IntField, units::none);
 
     /* Equipment identifier (Thermal: heat or cold) */
-    DEFINE_FIELD(sub_equipment_id, String, ObisId(0, SUB_MBUS_ID, 96, 1, 0), StringField, 0, 96);
+    DEFINE_FIELD(sub_equipment_id, String, ObisId(0, SUB_MBUS_ID, 96, 1, 0), HexStringField, 0, 96);
 
     /* Valve position (on/off/released) (Note: Removed in 4.0.7 / 4.2.2 / 5.0). */
     DEFINE_FIELD(sub_valve_position, uint8_t, ObisId(0, SUB_MBUS_ID, 24, 4, 0), IntField, units::none);
