@@ -395,18 +395,8 @@ namespace dsmr
       {
         if (*line_end == '\r' || *line_end == '\n')
         {
-          // The first identification line looks like:
-          // XXX5<id string>
-          // The DSMR spec is vague on details, but in 62056-21, the X's
-          // are a three-leter (registerd) manufacturer ID, the id
-          // string is up to 16 chars of arbitrary characters and the
-          // '5' is a baud rate indication. 5 apparently means 9600,
-          // which DSMR 3.x and below used. It seems that DSMR 2.x
-          // passed '3' here (which is mandatory for "mode D"
-          // communication according to 62956-21), so we also allow
-          // that.
-          if (line_start + 3 >= line_end || (line_start[3] != '5' && line_start[3] != '3'))
-            return res.fail("Invalid identification string", line_start);
+          // We don't parse the identity line, because there are weird corner cases
+
           // Offer it for processing using the all-ones Obis ID, which
           // is not otherwise valid.
           ParseResult<void> tmp = data->parse_line(ObisId(255, 255, 255, 255, 255, 255), line_start, line_end);
