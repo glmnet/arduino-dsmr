@@ -340,7 +340,7 @@ DEFINE_FIELD(power_returned_ch, FixedValue, ObisId(1, 1, 2, 7, 0), FixedField, u
 DEFINE_FIELD(electricity_threshold, FixedValue, ObisId(0, 0, 17, 0, 0), FixedField, units::kW, units::W);
 
 // Switch position Electricity (in/out/enabled). Removed in 4.0.7 / 4.2.2 / 5.0
-DEFINE_FIELD(electricity_switch_position, uint8_t, ObisId(0, 0, 96, 3, 10), IntField, units::none);
+DEFINE_FIELD(electricity_switch_position, std::string_view, ObisId(0, 0, 96, 3, 10), StringField, 1, 32);
 
 // Number of power failures in any phase
 DEFINE_FIELD(electricity_failures, uint32_t, ObisId(0, 0, 96, 7, 21), IntField, units::none);

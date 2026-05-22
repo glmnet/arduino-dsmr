@@ -28,7 +28,7 @@ TEST_CASE_FIXTURE(LogFixture, "Should parse all fields in the DSMR message corre
                     "1-0:1.7.0(00.333*kW)\r\n"
                     "1-0:2.7.0(00.000*kW)\r\n"
                     "0-0:17.0.0(999.9*kW)\r\n"
-                    "0-0:96.3.10(1)\r\n"
+                    "0-0:96.3.10(on)\r\n"
                     "0-0:96.7.21(00008)\r\n"
                     "0-0:96.7.9(00007)\r\n"
                     "1-0:99.97.0(1)(0-0:96.7.19)(000101000001W)(2147483647*s)\r\n"
@@ -87,7 +87,7 @@ TEST_CASE_FIXTURE(LogFixture, "Should parse all fields in the DSMR message corre
       /* FixedValue */ power_delivered,
       /* FixedValue */ power_returned,
       /* FixedValue */ electricity_threshold,
-      /* uint8_t */ electricity_switch_position,
+      /* String */ electricity_switch_position,
       /* uint32_t */ electricity_failures,
       /* uint32_t */ electricity_long_failures,
       /* String */ electricity_failure_log,
@@ -161,7 +161,7 @@ TEST_CASE_FIXTURE(LogFixture, "Should parse all fields in the DSMR message corre
   REQUIRE(data.power_delivered == 0.333f);
   REQUIRE(data.power_returned == 0.0f);
   REQUIRE(data.electricity_threshold == 999.9f);
-  REQUIRE(data.electricity_switch_position == 1);
+  REQUIRE(data.electricity_switch_position == "on");
   REQUIRE(data.electricity_failures == 8);
   REQUIRE(data.electricity_long_failures == 7);
   REQUIRE(data.electricity_failure_log == "(1)(0-0:96.7.19)(000101000001W)(2147483647*s)");
