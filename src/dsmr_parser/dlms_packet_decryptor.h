@@ -84,6 +84,7 @@ class DlmsPacketDecryptor final : NonCopyableAndNonMovable {
   static_assert(sizeof(DlmsPacket) == 19, "EncryptedPacket struct must be 19 bytes");
 
   Aes128GcmDecryptor& decryptor;
+  const bool check_crc_;
 
   static void log_span_as_hex(const LogLevel level, const std::span<const uint8_t> data) {
     constexpr size_t kCharsPerChunk = 200;
@@ -102,7 +103,7 @@ class DlmsPacketDecryptor final : NonCopyableAndNonMovable {
   }
 
 public:
-  explicit DlmsPacketDecryptor(Aes128GcmDecryptor& dec) : decryptor(dec) {}
+  explicit DlmsPacketDecryptor(Aes128GcmDecryptor& dec, bool check_crc) : decryptor(dec), check_crc_(check_crc) {}
 
   std::optional<DsmrUnencryptedTelegram> decrypt_inplace(std::span<uint8_t> dlms_packet_bytes) {
     Logger::log(LogLevel::VERY_VERBOSE, "Decrypt DLMS packet:");
@@ -114,32 +115,17 @@ public:
       return std::nullopt;
     }
 
-    // aad = AdditionalAuthenticatedData = SecurityControlField + AuthenticationKey.
-    //   SecurityControlField is always 0x30.
-    //   AuthenticationKey = "00112233445566778899AABBCCDDEEFF". It is hardcoded and is the same for all DSMR devices.
-    constexpr std::array<uint8_t, 17> aad{0x30, 0x00, 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88, 0x99, 0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0xFF};
-    const bool res = decryptor.decrypt_inplace(aad, dlms_packet->nonce(), dlms_packet->encrypted_telegram(), dlms_packet->gcm_tag());
+    const bool res = decryptor.decrypt_inplace(dlms_packet->nonce(), dlms_packet->encrypted_telegram(), dlms_packet->gcm_tag());
     if (!res) {
       Logger::log(LogLevel::DEBUG, "Decryption of DLMS packet failed");
       return std::nullopt;
     }
 
-    // The unencrypted DSMR telegram looks like "/data!abcd\r\n". We skip everything after the "!" sign. The encryption already handles integrity check.
-    const auto telegram = std::string_view{reinterpret_cast<const char*>(dlms_packet->encrypted_telegram().data()), dlms_packet->encrypted_telegram().size()};
-    if (telegram.front() != '/') {
-      Logger::log(LogLevel::DEBUG, "Unencrypted DSMR telegram should start with '/' character");
-      return std::nullopt;
-    }
-    const auto bangPos = std::ranges::find(telegram, '!');
-    if (bangPos == telegram.end()) {
-      Logger::log(LogLevel::DEBUG, "Unencrypted DSMR telegram should contain '!' character");
-      return std::nullopt;
-    }
-    const auto dsmrUnencryptedTelegram = std::string_view{telegram.begin(), bangPos + 1};
+    // The unencrypted DSMR telegram looks like "/data!abcd\r\n"
+    const auto telegram = DsmrUnencryptedTelegram::from_bytes(
+        std::string_view{reinterpret_cast<const char*>(dlms_packet->encrypted_telegram().data()), dlms_packet->encrypted_telegram().size()}, check_crc_);
 
-    Logger::log(LogLevel::VERBOSE, "DLMS packet decryption succeeded");
-
-    return DsmrUnencryptedTelegram(dsmrUnencryptedTelegram);
+    return telegram;
   }
 };
 

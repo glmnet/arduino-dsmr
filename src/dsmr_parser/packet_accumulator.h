@@ -24,53 +24,13 @@ class PacketAccumulator final {
     }
 
     bool has_space() const { return _packetSize < _buffer.size(); }
-
-    uint16_t calculate_crc16() const {
-      uint16_t crc = 0;
-      for (std::size_t i = 0; i < _packetSize; ++i) {
-        crc ^= static_cast<uint8_t>(_buffer[i]);
-        for (std::size_t bit = 0; bit < 8; bit++) {
-          if (crc & 1)
-            crc = (crc >> 1) ^ 0xa001;
-          else
-            crc = (crc >> 1);
-        }
-      }
-      return crc;
-    }
-  };
-
-  class CrcAccumulator final {
-    uint16_t crc = 0;
-    size_t amount_of_crc_nibbles = 0;
-
-  public:
-    bool add_to_crc(uint8_t byte) {
-      if (byte >= '0' && byte <= '9') {
-        byte = byte - '0';
-      } else if (byte >= 'A' && byte <= 'F') {
-        byte = static_cast<uint8_t>(byte - 'A' + 10);
-      } else if (byte >= 'a' && byte <= 'f') {
-        byte = static_cast<uint8_t>(byte - 'a' + 10);
-      } else {
-        return false;
-      }
-
-      crc = static_cast<uint16_t>((crc << 4) | (byte & 0xF));
-      amount_of_crc_nibbles++;
-      return true;
-    }
-
-    bool has_full_crc() const { return amount_of_crc_nibbles == 4; }
-
-    uint16_t crc_value() const { return crc; }
   };
 
   enum class State { WaitingForPacketStartSymbol, WaitingForPacketEndSymbol, WaitingForCrc };
   State _state = State::WaitingForPacketStartSymbol;
   std::span<uint8_t> _raw_buffer;
   DsmrPacketBuffer _buf;
-  CrcAccumulator _crc_accumulator;
+  size_t amount_of_crc_nibbles = 0;
   bool _check_crc;
 
 public:
@@ -106,32 +66,26 @@ public:
       if (!_check_crc) {
         _state = State::WaitingForPacketStartSymbol;
         Logger::log(LogLevel::VERBOSE, "Successfully received the telegram without CRC check");
-        return DsmrUnencryptedTelegram(_buf.packet());
+        return DsmrUnencryptedTelegram::from_bytes(_buf.packet(), false);
       }
 
       _state = State::WaitingForCrc;
-      _crc_accumulator = CrcAccumulator();
+      amount_of_crc_nibbles = 0;
       return std::nullopt;
 
     case State::WaitingForCrc:
-      if (!_crc_accumulator.add_to_crc(byte)) {
-        Logger::log(LogLevel::DEBUG, "Incorrect CRC character '%c'", byte);
-        _state = State::WaitingForPacketStartSymbol;
-        return std::nullopt;
-      }
-
-      if (!_crc_accumulator.has_full_crc()) {
+      amount_of_crc_nibbles++;
+      _buf.add(byte);
+      if (amount_of_crc_nibbles < 4) {
         return std::nullopt;
       }
 
       _state = State::WaitingForPacketStartSymbol;
-
-      if (_crc_accumulator.crc_value() == _buf.calculate_crc16()) {
+      const auto res = DsmrUnencryptedTelegram::from_bytes(_buf.packet(), true);
+      if (res) {
         Logger::log(LogLevel::VERBOSE, "Successfully received the telegram with correct CRC");
-        return DsmrUnencryptedTelegram(_buf.packet());
+        return *res;
       }
-
-      Logger::log(LogLevel::DEBUG, "CRC mismatch: expected %04X, got %04X", _crc_accumulator.crc_value(), _buf.calculate_crc16());
       return std::nullopt;
     }
 

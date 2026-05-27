@@ -28,17 +28,23 @@ public:
     initialized = true;
   }
 
-  bool decrypt_inplace(std::span<const uint8_t, 17> aad, std::span<const uint8_t, 12> nonce, std::span<uint8_t> ciphertext,
-                       std::span<const uint8_t, 12> tag) override {
+  bool decrypt_inplace(std::span<const uint8_t, 12> nonce, std::span<uint8_t> ciphertext, std::span<const uint8_t, 12> tag) override {
     if (!initialized) {
+      Logger::log(LogLevel::ERROR, "Decryption key is not set");
       return false;
     }
 
     br_gcm_reset(&gcm, nonce.data(), nonce.size());
-    br_gcm_aad_inject(&gcm, aad.data(), aad.size());
+    if (aad.has_value()) {
+      br_gcm_aad_inject(&gcm, aad->data(), aad->size());
+    }
     br_gcm_flip(&gcm);
     br_gcm_run(&gcm, 0, ciphertext.data(), ciphertext.size());
-    return br_gcm_check_tag_trunc(&gcm, tag.data(), tag.size());
+    // No authentication key provided: decrypt without verifying the GCM tag.
+    if (!aad.has_value()) {
+      return true;
+    }
+    return br_gcm_check_tag_trunc(&gcm, tag.data(), tag.size()) == 1;
   }
 
   ~Aes128GcmBearSsl() = default;

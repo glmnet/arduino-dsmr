@@ -39,7 +39,7 @@ target_include_directories(bearssl SYSTEM PUBLIC "${bearssl_SOURCE_DIR}/inc" PRI
 FetchContent_Populate(
   cmake_template
   GIT_REPOSITORY https://github.com/cpp-best-practices/cmake_template
-  GIT_TAG 0a32e3ff530534f04d7a73817d563bb26eea1b5a)
+  GIT_TAG a3971f5b4588a5f57a44317a0f7e29827add13f1)
 include(${cmake_template_SOURCE_DIR}/cmake/CompilerWarnings.cmake)
 include(${cmake_template_SOURCE_DIR}/cmake/Sanitizers.cmake)
 
@@ -60,14 +60,7 @@ target_link_libraries(dsmr_parser_test PRIVATE dsmr_parser_test_warnings)
 
 # enable sanitizers: address, leak, undefined behaviour
 add_library(dsmr_parser_sanitizers INTERFACE)
-if(APPLE)
-  # Leak sanitizer is not supported on Macos:
-  #   clang++: error: unsupported option '-fsanitize=leak' for target 'arm64-apple-darwin24.6.0'
-  set(ENABLE_SANITIZER_LEAK OFF)
-else()
-  set(ENABLE_SANITIZER_LEAK ON)
-endif()
-myproject_enable_sanitizers(dsmr_parser_sanitizers ON ${ENABLE_SANITIZER_LEAK} ON OFF OFF)
+myproject_enable_sanitizers(dsmr_parser_sanitizers ON ON ON OFF OFF)
 target_link_libraries(dsmr_parser_test PUBLIC dsmr_parser_sanitizers)
 if(MSVC)
   cmake_path(GET CMAKE_CXX_COMPILER PARENT_PATH MSVC_TOOLS_DIR)

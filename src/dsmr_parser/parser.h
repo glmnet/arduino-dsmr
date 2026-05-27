@@ -226,7 +226,7 @@ public:
   template <typename... Ts>
   static bool parse(ParsedData<Ts...>& data, DsmrUnencryptedTelegram telegram, bool unknown_error = false) {
     // Strip leading '/' and trailing '!'
-    auto input = telegram.content().substr(1, telegram.content().size() - 2);
+    auto input = telegram.content_without_crc().substr(1, telegram.content_without_crc().size() - 2);
 
     size_t pos = 0;
     size_t line_start = 0;

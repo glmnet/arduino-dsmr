@@ -9,5 +9,5 @@ using namespace fields;
 
 void P1Parser_some_function() {
   ParsedData<identification, p1_version> data;
-  DsmrParser::parse(data, DsmrUnencryptedTelegram("msg"), true);
+  DsmrParser::parse(data, *DsmrUnencryptedTelegram::from_bytes("msg", false), true);
 }

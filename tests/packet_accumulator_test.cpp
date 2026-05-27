@@ -100,10 +100,10 @@ TEST_CASE_FIXTURE(LogFixture, "Parse data with different packets. CRC check") {
   }
 
   REQUIRE(received_packets.size() == 4);
-  REQUIRE(std::string(received_packets[0].content()) == "/some !");
-  REQUIRE(std::string(received_packets[1].content()) == "/some !");
-  REQUIRE(std::string(received_packets[2].content()) == "/some !");
-  REQUIRE(std::string(received_packets[3].content()) == "/some !");
+  REQUIRE(std::string(received_packets[0].content_without_crc()) == "/some !");
+  REQUIRE(std::string(received_packets[1].content_without_crc()) == "/some !");
+  REQUIRE(std::string(received_packets[2].content_without_crc()) == "/some !");
+  REQUIRE(std::string(received_packets[3].content_without_crc()) == "/some !");
 }
 
 TEST_CASE_FIXTURE(LogFixture, "Parse data with different packets. No CRC check") {
@@ -124,10 +124,10 @@ TEST_CASE_FIXTURE(LogFixture, "Parse data with different packets. No CRC check")
     }
   }
 
-  REQUIRE(std::string(received_packets[0].content()) == "/some !");
-  REQUIRE(std::string(received_packets[1].content()) == "/some !");
-  REQUIRE(std::string(received_packets[2].content()) == "/some !");
-  REQUIRE(std::string(received_packets[3].content()) == "/some !");
+  REQUIRE(std::string(received_packets[0].content_without_crc()) == "/some !");
+  REQUIRE(std::string(received_packets[1].content_without_crc()) == "/some !");
+  REQUIRE(std::string(received_packets[2].content_without_crc()) == "/some !");
+  REQUIRE(std::string(received_packets[3].content_without_crc()) == "/some !");
 }
 
 TEST_CASE_FIXTURE(LogFixture, "Packet with correct CRC upper case") {
@@ -189,7 +189,7 @@ TEST_CASE_FIXTURE(LogFixture, "Start symbol during CRC accumulation resets state
     }
   }
   REQUIRE(received_packets.size() == 1);
-  REQUIRE(std::string(received_packets[0].content()) == "/some !");
+  REQUIRE(std::string(received_packets[0].content_without_crc()) == "/some !");
   REQUIRE(log.contains("Successfully received the telegram with correct CRC"));
 }
 

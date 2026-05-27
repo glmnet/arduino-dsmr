@@ -138,7 +138,7 @@ TEST_CASE_FIXTURE(LogFixture, "Should parse all fields in the DSMR message corre
       /* FixedValue */ period_3_for_instantaneous_values>
       data;
 
-  auto res = DsmrParser::parse(data, DsmrUnencryptedTelegram(msg), /* unknown_error */ true);
+  auto res = DsmrParser::parse(data, *DsmrUnencryptedTelegram::from_bytes(msg, /* crc_check */ false), /* unknown_error */ true);
   REQUIRE(res);
 
   // Check that all fields have correct values
@@ -211,7 +211,7 @@ TEST_CASE_FIXTURE(LogFixture, "Should parse Wh-based integers for FixedField (fa
       /* FixedValue */ energy_delivered_lux>
       data;
 
-  const auto& res = DsmrParser::parse(data, DsmrUnencryptedTelegram(msg));
+  const auto& res = DsmrParser::parse(data, *DsmrUnencryptedTelegram::from_bytes(msg, false));
   REQUIRE(res);
   REQUIRE(data.energy_delivered_lux == 441.879f); // 441,879 Wh => 441.879 kWh
   REQUIRE(fields::energy_delivered_lux::unit() == std::string("kWh"));
@@ -229,7 +229,7 @@ TEST_CASE_FIXTURE(LogFixture, "Should parse TimestampedFixedField for gas_delive
       /* TimestampedFixedValue */ gas_delivered_be>
       data;
 
-  const auto& res = DsmrParser::parse(data, DsmrUnencryptedTelegram(msg));
+  const auto& res = DsmrParser::parse(data, *DsmrUnencryptedTelegram::from_bytes(msg, false));
   REQUIRE(res);
   REQUIRE(data.gas_delivered_be == 12.345f);
   REQUIRE(data.gas_delivered_be.timestamp == "230101120000W");
@@ -246,7 +246,7 @@ TEST_CASE_FIXTURE(LogFixture, "Should take the last value with LastFixedField (c
       /* FixedValue */ active_energy_import_maximum_demand_last_13_months>
       data;
 
-  DsmrParser::parse(data, DsmrUnencryptedTelegram(msg));
+  DsmrParser::parse(data, *DsmrUnencryptedTelegram::from_bytes(msg, false));
   REQUIRE(data.active_energy_import_maximum_demand_last_13_months == 4.329f);
 }
 
@@ -262,7 +262,7 @@ TEST_CASE_FIXTURE(LogFixture, "Should detect duplicate fields") {
       /* FixedValue */ power_delivered>
       data;
 
-  const auto& res = DsmrParser::parse(data, DsmrUnencryptedTelegram(msg));
+  const auto& res = DsmrParser::parse(data, *DsmrUnencryptedTelegram::from_bytes(msg, false));
   REQUIRE_FALSE(res);
   REQUIRE(log.contains("Duplicate field"));
   REQUIRE(log.contains("(00.200*kW)"));
@@ -278,7 +278,7 @@ TEST_CASE_FIXTURE(LogFixture, "Should error on unknown field when unknown_error 
       /* String */ identification>
       data;
 
-  const auto& res = DsmrParser::parse(data, DsmrUnencryptedTelegram(msg), /*unknown_error=*/true);
+  const auto& res = DsmrParser::parse(data, *DsmrUnencryptedTelegram::from_bytes(msg, false), /*unknown_error=*/true);
   REQUIRE_FALSE(res);
   REQUIRE(log.contains("Unknown field"));
   REQUIRE(log.contains("1-0:2.7.0(00.000*kW)"));
@@ -295,7 +295,7 @@ TEST_CASE_FIXTURE(LogFixture, "Should report OBIS ID numbers over 255") {
       /* FixedValue */ power_delivered>
       data;
 
-  const auto& res = DsmrParser::parse(data, DsmrUnencryptedTelegram(msg));
+  const auto& res = DsmrParser::parse(data, *DsmrUnencryptedTelegram::from_bytes(msg, false));
   REQUIRE_FALSE(res);
   REQUIRE(log.contains("Obis ID has number over 255"));
   REQUIRE(log.contains("6-0:1.7.0(00.100*kW)"));
@@ -312,7 +312,7 @@ TEST_CASE_FIXTURE(LogFixture, "Should validate string length bounds (p1_version 
       /* String */ p1_version>
       data;
 
-  const auto& res = DsmrParser::parse(data, DsmrUnencryptedTelegram(msg));
+  const auto& res = DsmrParser::parse(data, *DsmrUnencryptedTelegram::from_bytes(msg, false));
   REQUIRE_FALSE(res);
   REQUIRE(log.contains("Invalid string length"));
   REQUIRE(log.contains("4)"));
@@ -329,7 +329,7 @@ TEST_CASE_FIXTURE(LogFixture, "Should validate string length bounds (p1_version 
       /* String */ p1_version>
       data;
 
-  const auto& res = DsmrParser::parse(data, DsmrUnencryptedTelegram(msg));
+  const auto& res = DsmrParser::parse(data, *DsmrUnencryptedTelegram::from_bytes(msg, false));
   REQUIRE_FALSE(res);
   REQUIRE(log.contains("Invalid string length"));
   REQUIRE(log.contains("123)"));
@@ -346,7 +346,7 @@ TEST_CASE_FIXTURE(LogFixture, "Should validate units for numeric fields") {
       /* FixedValue */ power_delivered>
       data;
 
-  const auto& res = DsmrParser::parse(data, DsmrUnencryptedTelegram(msg));
+  const auto& res = DsmrParser::parse(data, *DsmrUnencryptedTelegram::from_bytes(msg, false));
   REQUIRE_FALSE(res);
   REQUIRE(log.contains("Missing unit"));
   REQUIRE(log.contains("kVA)"));
@@ -363,7 +363,7 @@ TEST_CASE_FIXTURE(LogFixture, "Should report missing closing parenthesis for Str
       /* String */ p1_version>
       data;
 
-  const auto& res = DsmrParser::parse(data, DsmrUnencryptedTelegram(msg));
+  const auto& res = DsmrParser::parse(data, *DsmrUnencryptedTelegram::from_bytes(msg, false));
   REQUIRE_FALSE(res);
   REQUIRE(log.contains("Last dataline not CRLF terminated"));
 }
@@ -379,7 +379,7 @@ TEST_CASE_FIXTURE(LogFixture, "Should compute FixedField with decimals and milli
       /* FixedValue */ voltage_l1>
       data;
 
-  DsmrParser::parse(data, DsmrUnencryptedTelegram(msg));
+  DsmrParser::parse(data, *DsmrUnencryptedTelegram::from_bytes(msg, false));
   REQUIRE(data.voltage_l1 == 230.1f);
 }
 
@@ -395,7 +395,7 @@ TEST_CASE_FIXTURE(LogFixture, "all_present() should reflect presence of all requ
         /* FixedValue */ power_delivered>
         data;
 
-    DsmrParser::parse(data, DsmrUnencryptedTelegram(msg));
+    DsmrParser::parse(data, *DsmrUnencryptedTelegram::from_bytes(msg, false));
     REQUIRE(data.all_present());
   }
 
@@ -409,7 +409,7 @@ TEST_CASE_FIXTURE(LogFixture, "all_present() should reflect presence of all requ
         /* FixedValue */ power_delivered>
         data;
 
-    DsmrParser::parse(data, DsmrUnencryptedTelegram(msg));
+    DsmrParser::parse(data, *DsmrUnencryptedTelegram::from_bytes(msg, false));
     REQUIRE_FALSE(data.all_present());
   }
 }
@@ -425,7 +425,7 @@ TEST_CASE_FIXTURE(LogFixture, "Should report last dataline not CRLF terminated")
       /* FixedValue */ power_delivered>
       data;
 
-  const auto& res = DsmrParser::parse(data, DsmrUnencryptedTelegram(msg));
+  const auto& res = DsmrParser::parse(data, *DsmrUnencryptedTelegram::from_bytes(msg, false));
   REQUIRE_FALSE(res);
   REQUIRE(log.contains("Last dataline not CRLF terminated"));
 }
@@ -438,7 +438,7 @@ TEST_CASE_FIXTURE(LogFixture, "Doesn't crash for a small packet") {
       /* FixedValue */ power_delivered>
       data;
 
-  auto res = DsmrParser::parse(data, DsmrUnencryptedTelegram(msg));
+  auto res = DsmrParser::parse(data, *DsmrUnencryptedTelegram::from_bytes(msg, false));
   REQUIRE(res);
 }
 
@@ -450,7 +450,7 @@ TEST_CASE_FIXTURE(LogFixture, "Doesn't crash for a small packet 2") {
       /* FixedValue */ power_delivered>
       data;
 
-  auto res = DsmrParser::parse(data, DsmrUnencryptedTelegram(msg));
+  auto res = DsmrParser::parse(data, *DsmrUnencryptedTelegram::from_bytes(msg, false));
   REQUIRE_FALSE(res);
   REQUIRE(log.contains("Last dataline not CRLF terminated"));
 }
@@ -460,7 +460,7 @@ TEST_CASE_FIXTURE(LogFixture, "Trailing characters on data line") {
                     "1-0:1.7.0(00.123*kW) trailing\r\n"
                     "!";
   ParsedData</*String*/ identification, /*FixedValue*/ power_delivered> data;
-  const auto& res = DsmrParser::parse(data, DsmrUnencryptedTelegram(msg));
+  const auto& res = DsmrParser::parse(data, *DsmrUnencryptedTelegram::from_bytes(msg, false));
   REQUIRE_FALSE(res);
   REQUIRE(log.contains("Trailing characters on data line"));
   REQUIRE(log.contains(" trailing"));
@@ -471,7 +471,7 @@ TEST_CASE_FIXTURE(LogFixture, "Unknown field ignored when unknown_error is false
                     "1-0:2.7.0(00.000*kW)\r\n"
                     "!";
   ParsedData</*String*/ identification> data;
-  auto res = DsmrParser::parse(data, DsmrUnencryptedTelegram(msg));
+  auto res = DsmrParser::parse(data, *DsmrUnencryptedTelegram::from_bytes(msg, false));
   REQUIRE(res);
 }
 
@@ -480,7 +480,7 @@ TEST_CASE_FIXTURE(LogFixture, "Missing unit when required") {
                     "1-0:1.7.0(00.123)\r\n"
                     "!";
   ParsedData</*String*/ identification, /*FixedValue*/ power_delivered> data;
-  const auto& res = DsmrParser::parse(data, DsmrUnencryptedTelegram(msg));
+  const auto& res = DsmrParser::parse(data, *DsmrUnencryptedTelegram::from_bytes(msg, false));
   REQUIRE_FALSE(res);
   REQUIRE(log.contains("Missing unit"));
   REQUIRE(log.contains(")"));
@@ -491,7 +491,7 @@ TEST_CASE_FIXTURE(LogFixture, "Unit present when not expected") {
                     "0-0:96.7.21(00008*s)\r\n"
                     "!";
   ParsedData</*String*/ identification, /*uint32_t*/ electricity_failures> data;
-  const auto& res = DsmrParser::parse(data, DsmrUnencryptedTelegram(msg));
+  const auto& res = DsmrParser::parse(data, *DsmrUnencryptedTelegram::from_bytes(msg, false));
   REQUIRE_FALSE(res);
   REQUIRE(log.contains("Extra data"));
   REQUIRE(log.contains("*s)"));
@@ -508,7 +508,7 @@ TEST_CASE_FIXTURE(LogFixture, "Malformed packet that starts with ')'") {
       /* String */ p1_version>
       data;
 
-  const auto& res = DsmrParser::parse(data, DsmrUnencryptedTelegram(msg));
+  const auto& res = DsmrParser::parse(data, *DsmrUnencryptedTelegram::from_bytes(msg, false));
   REQUIRE_FALSE(res);
   REQUIRE(log.contains("Unexpected ')' symbol"));
 }
@@ -524,7 +524,7 @@ TEST_CASE_FIXTURE(LogFixture, "Non-digit in numeric part") {
       /* FixedValue */ power_delivered>
       data;
 
-  const auto& res = DsmrParser::parse(data, DsmrUnencryptedTelegram(msg));
+  const auto& res = DsmrParser::parse(data, *DsmrUnencryptedTelegram::from_bytes(msg, false));
   REQUIRE_FALSE(res);
   REQUIRE(log.contains("Missing unit"));
   REQUIRE(log.contains("A23*kW)"));
@@ -537,7 +537,7 @@ TEST_CASE_FIXTURE(LogFixture, "OBIS id empty line") {
                     "!";
 
   ParsedData</*String*/ identification, /*FixedValue*/ power_delivered> data;
-  const auto& res = DsmrParser::parse(data, DsmrUnencryptedTelegram(msg));
+  const auto& res = DsmrParser::parse(data, *DsmrUnencryptedTelegram::from_bytes(msg, false));
   REQUIRE_FALSE(res);
   REQUIRE(log.contains("OBIS id Empty"));
   REQUIRE(log.contains("garbage"));
@@ -550,7 +550,7 @@ TEST_CASE_FIXTURE(LogFixture, "Accepts LF-only line endings") {
                     "!";
 
   ParsedData</*String*/ identification, /*FixedValue*/ power_delivered> data;
-  DsmrParser::parse(data, DsmrUnencryptedTelegram(msg));
+  DsmrParser::parse(data, *DsmrUnencryptedTelegram::from_bytes(msg, false));
   REQUIRE(data.power_delivered == 0.123f);
 }
 
@@ -561,7 +561,7 @@ TEST_CASE_FIXTURE(LogFixture, "Unit matching is case-insensitive") {
                     "!";
 
   ParsedData</*String*/ identification, /*FixedValue*/ energy_delivered_tariff1> data;
-  DsmrParser::parse(data, DsmrUnencryptedTelegram(msg));
+  DsmrParser::parse(data, *DsmrUnencryptedTelegram::from_bytes(msg, false));
   REQUIRE(data.energy_delivered_tariff1 == 1.000f);
 }
 
@@ -572,7 +572,7 @@ TEST_CASE_FIXTURE(LogFixture, "Numeric without decimals is accepted (auto-padded
                     "!";
 
   ParsedData</*String*/ identification, /*FixedValue*/ power_delivered> data;
-  const auto& res = DsmrParser::parse(data, DsmrUnencryptedTelegram(msg));
+  const auto& res = DsmrParser::parse(data, *DsmrUnencryptedTelegram::from_bytes(msg, false));
   REQUIRE(res);
   REQUIRE(data.power_delivered == 1.0f);
 }
@@ -587,7 +587,7 @@ TEST_CASE_FIXTURE(LogFixture, "Can parse a dataline if it has a break in the mid
                     "!";
 
   ParsedData<identification, gas_delivered_text, message_long> data;
-  DsmrParser::parse(data, DsmrUnencryptedTelegram(msg));
+  DsmrParser::parse(data, *DsmrUnencryptedTelegram::from_bytes(msg, false));
   REQUIRE(data.gas_delivered_text == "(120517020000)(08)(60)(1)(0-1:24.2.1)(m3)\r\n(00124.477)");
   REQUIRE(data.message_long == "303132333435363738393A3B3C3D3E3F303132333435363738393A3B3C3D3E3F\r\n303132333435363738393A3B3C3D3E3F30313233343536373"
                                "8393A3B3C3D3E3F\r\n303132333435363738393A3B3C3D3E3F");
@@ -598,7 +598,7 @@ TEST_CASE_FIXTURE(LogFixture, "Can parse a 0 value without a unit") {
                     "0-1:24.2.1(000101000000W)(00000000.0000)\r\n"
                     "!";
   ParsedData<gas_delivered> data;
-  const auto& res = DsmrParser::parse(data, DsmrUnencryptedTelegram(msg));
+  const auto& res = DsmrParser::parse(data, *DsmrUnencryptedTelegram::from_bytes(msg, false));
   REQUIRE(res);
   REQUIRE(data.gas_delivered == 0.0f);
 }
@@ -608,7 +608,7 @@ TEST_CASE_FIXTURE(LogFixture, "Whitespace after OBIS ID") {
                     "0-1:24.2.1 (000101000000W)(00000000.0000)\r\n"
                     "!";
   ParsedData<gas_delivered> data;
-  const auto& res = DsmrParser::parse(data, DsmrUnencryptedTelegram(msg), /*unknown_error=*/true);
+  const auto& res = DsmrParser::parse(data, *DsmrUnencryptedTelegram::from_bytes(msg, false), /*unknown_error=*/true);
   REQUIRE_FALSE(res);
   REQUIRE(log.contains("Missing ("));
   REQUIRE(log.contains(" (000101000000W)(00000000.0000)"));
@@ -620,7 +620,7 @@ TEST_CASE_FIXTURE(LogFixture, "Use integer fallback unit") {
                     "1-0:14.7.0(50*Hz)\r\n"
                     "!";
   ParsedData<gas_delivered, frequency> data;
-  DsmrParser::parse(data, DsmrUnencryptedTelegram(msg), /*unknown_error=*/true);
+  DsmrParser::parse(data, *DsmrUnencryptedTelegram::from_bytes(msg, false), /*unknown_error=*/true);
   REQUIRE(data.gas_delivered == 0.012f);
   REQUIRE(data.frequency == 0.05f);
 }
@@ -634,7 +634,7 @@ TEST_CASE_FIXTURE(LogFixture, "AveragedFixedField works properly for a long arra
                     "!";
 
   ParsedData<active_energy_import_maximum_demand_last_13_months> data;
-  DsmrParser::parse(data, DsmrUnencryptedTelegram(msg), /* unknown_error */ true);
+  DsmrParser::parse(data, *DsmrUnencryptedTelegram::from_bytes(msg, false), /* unknown_error */ true);
 
   REQUIRE(data.active_energy_import_maximum_demand_last_13_months.val() == 3.642f);
 }
@@ -646,7 +646,7 @@ TEST_CASE_FIXTURE(LogFixture, "AveragedFixedField works properly for an empty ar
                     "!";
 
   ParsedData<active_energy_import_maximum_demand_last_13_months, energy_delivered_tariff1> data;
-  DsmrParser::parse(data, DsmrUnencryptedTelegram(msg), /* unknown_error */ true);
+  DsmrParser::parse(data, *DsmrUnencryptedTelegram::from_bytes(msg, false), /* unknown_error */ true);
 
   REQUIRE(data.active_energy_import_maximum_demand_last_13_months.val() == 0.0f);
   REQUIRE(data.energy_delivered_tariff1.val() == 1.0f);
@@ -659,7 +659,7 @@ TEST_CASE_FIXTURE(LogFixture, "Should parse gas_delivered_gj field") {
 
   ParsedData<gas_delivered_gj> data;
 
-  const auto& res = DsmrParser::parse(data, DsmrUnencryptedTelegram(msg), /* unknown_error */ true);
+  const auto& res = DsmrParser::parse(data, *DsmrUnencryptedTelegram::from_bytes(msg, false), /* unknown_error */ true);
   REQUIRE(res);
   REQUIRE(data.gas_delivered_gj == 3.829f);
 }
@@ -671,7 +671,7 @@ TEST_CASE_FIXTURE(LogFixture, "Missing opening parenthesis for numeric field") {
                     "!";
 
   ParsedData</*String*/ identification, /*FixedValue*/ power_delivered> data;
-  const auto& res = DsmrParser::parse(data, DsmrUnencryptedTelegram(msg));
+  const auto& res = DsmrParser::parse(data, *DsmrUnencryptedTelegram::from_bytes(msg, false));
   REQUIRE_FALSE(res);
   REQUIRE(log.contains("Missing ( ''"));
 }
@@ -683,7 +683,7 @@ TEST_CASE_FIXTURE(LogFixture, "Non-digit in integer part of numeric field") {
                     "!";
 
   ParsedData</*String*/ identification, /*FixedValue*/ power_delivered> data;
-  const auto& res = DsmrParser::parse(data, DsmrUnencryptedTelegram(msg));
+  const auto& res = DsmrParser::parse(data, *DsmrUnencryptedTelegram::from_bytes(msg, false));
   REQUIRE_FALSE(res);
   REQUIRE(log.contains("Invalid number"));
   REQUIRE(log.contains("A0.123*kW)"));
@@ -696,7 +696,7 @@ TEST_CASE_FIXTURE(LogFixture, "Unit too short for numeric field") {
                     "!";
 
   ParsedData</*String*/ identification, /*FixedValue*/ energy_delivered_tariff1> data;
-  const auto& res = DsmrParser::parse(data, DsmrUnencryptedTelegram(msg));
+  const auto& res = DsmrParser::parse(data, *DsmrUnencryptedTelegram::from_bytes(msg, false));
   REQUIRE_FALSE(res);
   REQUIRE(log.contains("Missing unit"));
   REQUIRE(log.contains("kW)"));
@@ -709,7 +709,7 @@ TEST_CASE_FIXTURE(LogFixture, "Nested opening parenthesis") {
                     "!";
 
   ParsedData</*String*/ identification, /*FixedValue*/ power_delivered> data;
-  const auto& res = DsmrParser::parse(data, DsmrUnencryptedTelegram(msg));
+  const auto& res = DsmrParser::parse(data, *DsmrUnencryptedTelegram::from_bytes(msg, false));
   REQUIRE_FALSE(res);
   REQUIRE(log.contains("Unexpected '(' symbol"));
 }
@@ -723,7 +723,7 @@ TEST_CASE_FIXTURE(LogFixture, "ParsedData without any fields") {
                     "!";
 
   ParsedData<> data;
-  const auto& res = DsmrParser::parse(data, DsmrUnencryptedTelegram(msg));
+  const auto& res = DsmrParser::parse(data, *DsmrUnencryptedTelegram::from_bytes(msg, false));
   REQUIRE(res);
   REQUIRE(data.all_present());
 }

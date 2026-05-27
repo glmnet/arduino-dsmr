@@ -29,7 +29,7 @@ size_t dlms_packet_buffer_position = 0;       // needed to accumulate bytes
 Aes128GcmMbedTls gcm_decryptor;
 
 // Create the DLMS packet decryption. You only need to create it once. It is stateless.
-DlmsPacketDecryptor decryptor(gcm_decryptor);
+DlmsPacketDecryptor decryptor(gcm_decryptor, /* crc_check */ true);
 
 long last_read_timestamp = 0; // timestamp of the last byte received. Needed to detect inter-frame gaps.
 
@@ -38,8 +38,13 @@ Uart uart; // UART connected to P1 port
 // This encryption key is unique per smart meter and must be provided by the electricity company.
 const auto encryption_key = Aes128GcmDecryptionKey::from_hex("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA").value();
 
+// Optional. You can provide the authentication key to verify the GCM tag. Without this key, the decryption will skip the tag verification.
+const auto authentication_key = Aes128GcmAuthenticationKey::from_hex("BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB").value();
+
 // You must set the encryption key before calling `decryptor.decrypt_inplace` method.
 inline void set_encryption_key() { gcm_decryptor.set_encryption_key(encryption_key); }
+// Optional. Set the authentication key if you want to verify the GCM tag.
+inline void set_authentication_key() { gcm_decryptor.set_authentication_key(authentication_key); }
 
 // Main loop that reads data from the P1 port and decrypts packets.
 inline void loop() {
@@ -61,6 +66,7 @@ inline void loop() {
 
   // detect inter-frame delay. If no byte is received for more than 1 second, then the packet is complete
   if ((millis() - last_read_timestamp) > 1000 && dlms_packet_buffer_position > 0) {
+    // Decrypt the received packet. The decrypted telegram contains the CRC (checked according to the crc_check flag passed to the decryptor constructor).
     std::optional<DsmrUnencryptedTelegram> dsmr_telegram = decryptor.decrypt_inplace({dlms_packet_buffer.data(), dlms_packet_buffer_position});
     dlms_packet_buffer_position = 0; // reset for the next packet
 

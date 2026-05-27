@@ -10,6 +10,6 @@ void DlmsPacketDecryptor_some_function() {
   std::array<uint8_t, 1000> packet_buffer;
   Aes128GcmMbedTls gcm_decryptor;
   gcm_decryptor.set_encryption_key(*Aes128GcmDecryptionKey::from_hex("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"));
-  DlmsPacketDecryptor decryptor(gcm_decryptor);
+  DlmsPacketDecryptor decryptor(gcm_decryptor, false);
   decryptor.decrypt_inplace(packet_buffer);
 }
