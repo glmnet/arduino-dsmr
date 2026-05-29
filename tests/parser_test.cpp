@@ -664,6 +664,18 @@ TEST_CASE_FIXTURE(LogFixture, "Should parse gas_delivered_gj field") {
   REQUIRE(data.gas_delivered_gj == 3.829f);
 }
 
+TEST_CASE_FIXTURE(LogFixture, "Should parse hexified equipment_id field") {
+  const auto& msg = "/identification\r\n"
+                    "0-0:96.1.1(4530303632303030303134353034303239)\r\n"
+                    "!";
+
+  ParsedData<equipment_id> data;
+
+  const auto& res = DsmrParser::parse(data, *DsmrUnencryptedTelegram::from_bytes(msg, false), /* unknown_error */ true);
+  REQUIRE(res);
+  REQUIRE(data.equipment_id == "E0062000014504029");
+}
+
 TEST_CASE_FIXTURE(LogFixture, "Missing opening parenthesis for numeric field") {
   const auto& msg = "/AAA5MTR\r\n"
                     "\r\n"
