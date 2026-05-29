@@ -676,6 +676,64 @@ TEST_CASE_FIXTURE(LogFixture, "Should parse hexified equipment_id field") {
   REQUIRE(data.equipment_id == "E0062000014504029");
 }
 
+TEST_CASE_FIXTURE(LogFixture, "Should keep equipment_id as-is when not hex encoded") {
+  const auto& msg = "/identification\r\n"
+                    "0-0:96.1.1(Some long string 32 bytes)\r\n"
+                    "!";
+
+  ParsedData<equipment_id> data;
+
+  const auto& res = DsmrParser::parse(data, *DsmrUnencryptedTelegram::from_bytes(msg, false), /* unknown_error */ true);
+  REQUIRE(res);
+  REQUIRE(data.equipment_id == "Some long string 32 bytes");
+}
+
+TEST_CASE_FIXTURE(LogFixture, "Should keep equipment_id as-is for odd number of hex digits") {
+  // Odd length cannot be hex-decoded, so it is kept verbatim.
+  const auto& msg = "/identification\r\n"
+                    "0-0:96.1.1(45303)\r\n"
+                    "!";
+
+  ParsedData<equipment_id> data;
+  const auto& res = DsmrParser::parse(data, *DsmrUnencryptedTelegram::from_bytes(msg, false), /* unknown_error */ true);
+  REQUIRE(res);
+  REQUIRE(data.equipment_id == "45303");
+}
+
+TEST_CASE_FIXTURE(LogFixture, "Should keep equipment_id as-is when lowercase hex digits are present") {
+  const auto& msg = "/identification\r\n"
+                    "0-0:96.1.1(4530303632303030303134353034303239aa)\r\n"
+                    "!";
+
+  // Lowercase letters are not treated as hex digits, so the value is kept verbatim.
+  ParsedData<equipment_id> data;
+  const auto& res = DsmrParser::parse(data, *DsmrUnencryptedTelegram::from_bytes(msg, false), /* unknown_error */ true);
+  REQUIRE(res);
+  REQUIRE(data.equipment_id == "4530303632303030303134353034303239aa");
+}
+
+TEST_CASE_FIXTURE(LogFixture, "Should keep equipment_id as-is when decoded byte is not alphanumeric") {
+  const auto& msg = "/identification\r\n"
+                    "0-0:96.1.1(00)\r\n" // 0x00 is not a digit or uppercase letter
+                    "!";
+
+  ParsedData<equipment_id> data;
+  const auto& res = DsmrParser::parse(data, *DsmrUnencryptedTelegram::from_bytes(msg, false), /* unknown_error */ true);
+  REQUIRE(res);
+  REQUIRE(data.equipment_id == "00");
+}
+
+TEST_CASE_FIXTURE(LogFixture, "Should parse an empty equipment_id field") {
+  const auto& msg = "/identification\r\n"
+                    "0-0:96.1.1()\r\n"
+                    "!";
+
+  ParsedData<equipment_id> data;
+  const auto& res = DsmrParser::parse(data, *DsmrUnencryptedTelegram::from_bytes(msg, false), /* unknown_error */ true);
+  REQUIRE(res);
+  REQUIRE(data.equipment_id == "");
+}
+
 TEST_CASE_FIXTURE(LogFixture, "Missing opening parenthesis for numeric field") {
   const auto& msg = "/AAA5MTR\r\n"
                     "\r\n"
