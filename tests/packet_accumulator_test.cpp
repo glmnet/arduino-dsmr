@@ -18,7 +18,7 @@ TEST_CASE_FIXTURE(LogFixture, "Packet with correct CRC") {
   std::optional<DsmrUnencryptedTelegram> dsmrTelegram;
   for (const auto& byte : msg) {
     dsmrTelegram = accumulator.process_byte(static_cast<uint8_t>(byte));
-    if(dsmrTelegram)
+    if (dsmrTelegram)
       break;
   }
   REQUIRE(dsmrTelegram);

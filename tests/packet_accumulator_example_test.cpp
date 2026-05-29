@@ -50,7 +50,7 @@ TEST_CASE_FIXTURE(LogFixture, "PacketAccumulator example") {
   for (const char byte : data_from_p1_port) {
     // Feed the byte to the accumulator.
     std::optional<DsmrUnencryptedTelegram> dsmrTelegram = accumulator.process_byte(static_cast<uint8_t>(byte));
-    if(!dsmrTelegram) {
+    if (!dsmrTelegram) {
       // No full packet received yet
       continue;
     }

@@ -1,7 +1,7 @@
 #pragma once
 
-#include "dsmr_parser/util.h"
 #include "dsmr_parser/packet_accumulator.h"
+#include "dsmr_parser/util.h"
 #include <cstdio>
 #include <string>
 #include <vector>
@@ -23,7 +23,9 @@ public:
     });
   }
 
-  ~LogCapturer() { dsmr_parser::Logger::set_log_function([](dsmr_parser::LogLevel, const char*, va_list) {}); }
+  ~LogCapturer() {
+    dsmr_parser::Logger::set_log_function([](dsmr_parser::LogLevel, const char*, va_list) {});
+  }
 
   bool contains(const std::string& substr) const {
     for (const auto& msg : messages) {
