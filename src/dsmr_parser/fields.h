@@ -24,7 +24,7 @@
 namespace dsmr_parser {
 
 template <typename T>
-struct ParsedField {
+struct ParsedField : NonCopyableAndNonMovable {
   template <typename F>
   void apply(F& f) {
     f.apply(*static_cast<T*>(this));
