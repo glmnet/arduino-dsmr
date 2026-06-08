@@ -260,6 +260,7 @@ struct units final {
   static inline constexpr char s[] = "s";
   static inline constexpr char Hz[] = "Hz";
   static inline constexpr char kHz[] = "kHz";
+  static inline constexpr char mHz[] = "mHz";
 };
 
 #define DEFINE_FIELD(fieldname, value_t, obis, field_t, ...)        \
@@ -444,7 +445,7 @@ DEFINE_FIELD(voltage_avg_l3, FixedValue, ObisId(1, 0, 72, 24, 0), FixedField, un
 // Instantaneous voltage (U) [V]
 DEFINE_FIELD(voltage, FixedValue, ObisId(1, 0, 12, 7, 0), FixedField, units::V, units::mV);
 // Frequency [Hz]
-DEFINE_FIELD(frequency, FixedValue, ObisId(1, 0, 14, 7, 0), FixedField, units::kHz, units::Hz);
+DEFINE_FIELD(frequency, FixedValue, ObisId(1, 0, 14, 7, 0), FixedField, units::Hz, units::mHz);
 // Absolute active instantaneous power (|A|) [kW]
 DEFINE_FIELD(abs_power, FixedValue, ObisId(1, 0, 15, 7, 0), FixedField, units::kW, units::W);
 

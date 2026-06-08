@@ -617,12 +617,31 @@ TEST_CASE_FIXTURE(LogFixture, "Whitespace after OBIS ID") {
 TEST_CASE_FIXTURE(LogFixture, "Use integer fallback unit") {
   const auto& msg = "/KMP5 ZABF000000000000\r\n"
                     "0-1:24.2.1(230101120000W)(00012*dm3)\r\n"
-                    "1-0:14.7.0(50*Hz)\r\n"
+                    "1-0:14.7.0(50000*mHz)\r\n"
                     "!";
   ParsedData<gas_delivered, frequency> data;
   DsmrParser::parse(data, *DsmrUnencryptedTelegram::from_bytes(msg, false), /*unknown_error=*/true);
   REQUIRE(data.gas_delivered == 0.012f);
-  REQUIRE(data.frequency == 0.05f);
+  REQUIRE(data.frequency == 50.0f);
+}
+
+TEST_CASE_FIXTURE(LogFixture, "Frequency reported as float Hz") {
+  // Some meters (e.g. Lithuanian ESO) report grid frequency as a float in Hz,
+  // such as "1-0:14.7.0(49.9*Hz)". This must parse to 49.9 Hz, not 0.0499.
+  const auto& msg = "/KMP5 ZABF000000000000\r\n"
+                    "1-0:14.7.0(49.9*Hz)\r\n"
+                    "!";
+  ParsedData<frequency> data;
+  DsmrParser::parse(data, *DsmrUnencryptedTelegram::from_bytes(msg, false), /*unknown_error=*/true);
+  REQUIRE(data.frequency == 49.9f);
+
+  // An integer value with the Hz unit must also parse to 50.0 Hz (not 0.05).
+  const auto& msg2 = "/KMP5 ZABF000000000000\r\n"
+                     "1-0:14.7.0(50*Hz)\r\n"
+                     "!";
+  ParsedData<frequency> data2;
+  DsmrParser::parse(data2, *DsmrUnencryptedTelegram::from_bytes(msg2, false), /*unknown_error=*/true);
+  REQUIRE(data2.frequency == 50.0f);
 }
 
 TEST_CASE_FIXTURE(LogFixture, "AveragedFixedField works properly for a long array") {
