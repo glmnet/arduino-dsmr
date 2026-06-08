@@ -1,6 +1,6 @@
 {
   "name": "dsmr_parser",
-  "version": "1.8.0",
+  "version": "1.9.0",
   "description": "A parser for Dutch Smart Meter Requirements (DSMR) telegrams. Fork of arduino-dsmr. Doesn't depend on the Arduino framework and has many bug fixes and code quality improvements. Supports encrypted DSMR packets.",
   "keywords": "dsmr",
   "repository": {
