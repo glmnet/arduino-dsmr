@@ -38,6 +38,7 @@ TEST_CASE_FIXTURE(LogFixture, "Should parse all fields in the DSMR message corre
                     "1-0:32.36.0(00000)\r\n"
                     "0-0:96.13.1()\r\n"
                     "0-0:96.13.0()\r\n"
+                    "1-0:14.7.0(49.9*Hz)\r\n"
                     "1-0:32.7.0(234.0*V)\r\n"
                     "1-0:52.7.0(231.0*V)\r\n"
                     "1-0:72.7.0(231.0*V)\r\n"
@@ -86,6 +87,7 @@ TEST_CASE_FIXTURE(LogFixture, "Should parse all fields in the DSMR message corre
       /* String */ electricity_tariff_il,
       /* FixedValue */ power_delivered,
       /* FixedValue */ power_returned,
+      /* FixedValue */ frequency,
       /* FixedValue */ electricity_threshold,
       /* String */ electricity_switch_position,
       /* uint32_t */ electricity_failures,
@@ -181,6 +183,7 @@ TEST_CASE_FIXTURE(LogFixture, "Should parse all fields in the DSMR message corre
   REQUIRE(data.power_delivered_l3 == 0.0f);
   REQUIRE(data.power_returned_l1 == 0.0f);
   REQUIRE(data.power_returned_l2 == 0.0f);
+  REQUIRE(data.frequency == 49.9f);
   REQUIRE(data.power_returned_l3 == 0.0f);
   REQUIRE(data.gas_device_type == 3);
   REQUIRE(data.gas_equipment_id == "0000000000000000000000000000000000");
@@ -623,25 +626,6 @@ TEST_CASE_FIXTURE(LogFixture, "Use integer fallback unit") {
   DsmrParser::parse(data, *DsmrUnencryptedTelegram::from_bytes(msg, false), /*unknown_error=*/true);
   REQUIRE(data.gas_delivered == 0.012f);
   REQUIRE(data.frequency == 50.0f);
-}
-
-TEST_CASE_FIXTURE(LogFixture, "Frequency reported as float Hz") {
-  // Some meters (e.g. Lithuanian ESO) report grid frequency as a float in Hz,
-  // such as "1-0:14.7.0(49.9*Hz)". This must parse to 49.9 Hz, not 0.0499.
-  const auto& msg = "/KMP5 ZABF000000000000\r\n"
-                    "1-0:14.7.0(49.9*Hz)\r\n"
-                    "!";
-  ParsedData<frequency> data;
-  DsmrParser::parse(data, *DsmrUnencryptedTelegram::from_bytes(msg, false), /*unknown_error=*/true);
-  REQUIRE(data.frequency == 49.9f);
-
-  // An integer value with the Hz unit must also parse to 50.0 Hz (not 0.05).
-  const auto& msg2 = "/KMP5 ZABF000000000000\r\n"
-                     "1-0:14.7.0(50*Hz)\r\n"
-                     "!";
-  ParsedData<frequency> data2;
-  DsmrParser::parse(data2, *DsmrUnencryptedTelegram::from_bytes(msg2, false), /*unknown_error=*/true);
-  REQUIRE(data2.frequency == 50.0f);
 }
 
 TEST_CASE_FIXTURE(LogFixture, "AveragedFixedField works properly for a long array") {
