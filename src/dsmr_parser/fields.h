@@ -259,7 +259,6 @@ struct units final {
   static inline constexpr char VA[] = "VA";
   static inline constexpr char s[] = "s";
   static inline constexpr char Hz[] = "Hz";
-  static inline constexpr char kHz[] = "kHz";
   static inline constexpr char mHz[] = "mHz";
 };
 
