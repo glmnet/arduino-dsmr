@@ -330,14 +330,58 @@ DEFINE_FIELD(reactive_energy_returned_tariff3, FixedValue, ObisId(1, 0, 4, 8, 3)
 DEFINE_FIELD(reactive_energy_returned_tariff4, FixedValue, ObisId(1, 0, 4, 8, 4), FixedField, units::kvarh, units::varh);
 
 // Specific fields used for Switzerland
+// Meter Reading electricity delivered to client (total, no tariff) in 0,001 kWh
+DEFINE_FIELD(energy_delivered_ch, FixedValue, ObisId(1, 1, 1, 8, 0), FixedField, units::kWh, units::Wh);
 // Meter Reading electricity delivered to client (Tariff 1) in 0,001 kWh
 DEFINE_FIELD(energy_delivered_tariff1_ch, FixedValue, ObisId(1, 1, 1, 8, 1), FixedField, units::kWh, units::Wh);
 // Meter Reading electricity delivered to client (Tariff 2) in 0,001 kWh
 DEFINE_FIELD(energy_delivered_tariff2_ch, FixedValue, ObisId(1, 1, 1, 8, 2), FixedField, units::kWh, units::Wh);
+// Meter Reading electricity delivered by client (total, no tariff) in 0,001 kWh
+DEFINE_FIELD(energy_returned_ch, FixedValue, ObisId(1, 1, 2, 8, 0), FixedField, units::kWh, units::Wh);
 // Meter Reading electricity delivered by client (Tariff 1) in 0,001 kWh
 DEFINE_FIELD(energy_returned_tariff1_ch, FixedValue, ObisId(1, 1, 2, 8, 1), FixedField, units::kWh, units::Wh);
 // Meter Reading electricity delivered by client (Tariff 2) in 0,001 kWh
 DEFINE_FIELD(energy_returned_tariff2_ch, FixedValue, ObisId(1, 1, 2, 8, 2), FixedField, units::kWh, units::Wh);
+// Reactive energy +R (total, no tariff) in 0,001 kvarh
+DEFINE_FIELD(total_imported_energy_ch, FixedValue, ObisId(1, 1, 3, 8, 0), FixedField, units::kvarh, units::varh);
+// Reactive energy -R (total, no tariff) in 0,001 kvarh
+DEFINE_FIELD(total_exported_energy_ch, FixedValue, ObisId(1, 1, 4, 8, 0), FixedField, units::kvarh, units::varh);
+// Reactive energy Q1 +Ri (total / Tariff 1 / Tariff 2) in 0,001 kvarh
+DEFINE_FIELD(reactive_energy_q1_ch, FixedValue, ObisId(1, 1, 5, 8, 0), FixedField, units::kvarh, units::varh);
+DEFINE_FIELD(reactive_energy_q1_tariff1_ch, FixedValue, ObisId(1, 1, 5, 8, 1), FixedField, units::kvarh, units::varh);
+DEFINE_FIELD(reactive_energy_q1_tariff2_ch, FixedValue, ObisId(1, 1, 5, 8, 2), FixedField, units::kvarh, units::varh);
+// Reactive energy Q2 +Rc (total / Tariff 1 / Tariff 2) in 0,001 kvarh
+DEFINE_FIELD(reactive_energy_q2_ch, FixedValue, ObisId(1, 1, 6, 8, 0), FixedField, units::kvarh, units::varh);
+DEFINE_FIELD(reactive_energy_q2_tariff1_ch, FixedValue, ObisId(1, 1, 6, 8, 1), FixedField, units::kvarh, units::varh);
+DEFINE_FIELD(reactive_energy_q2_tariff2_ch, FixedValue, ObisId(1, 1, 6, 8, 2), FixedField, units::kvarh, units::varh);
+// Reactive energy Q3 -Ri (total / Tariff 1 / Tariff 2) in 0,001 kvarh
+DEFINE_FIELD(reactive_energy_q3_ch, FixedValue, ObisId(1, 1, 7, 8, 0), FixedField, units::kvarh, units::varh);
+DEFINE_FIELD(reactive_energy_q3_tariff1_ch, FixedValue, ObisId(1, 1, 7, 8, 1), FixedField, units::kvarh, units::varh);
+DEFINE_FIELD(reactive_energy_q3_tariff2_ch, FixedValue, ObisId(1, 1, 7, 8, 2), FixedField, units::kvarh, units::varh);
+// Reactive energy Q4 -Rc (total / Tariff 1 / Tariff 2) in 0,001 kvarh
+DEFINE_FIELD(reactive_energy_q4_ch, FixedValue, ObisId(1, 1, 8, 8, 0), FixedField, units::kvarh, units::varh);
+DEFINE_FIELD(reactive_energy_q4_tariff1_ch, FixedValue, ObisId(1, 1, 8, 8, 1), FixedField, units::kvarh, units::varh);
+DEFINE_FIELD(reactive_energy_q4_tariff2_ch, FixedValue, ObisId(1, 1, 8, 8, 2), FixedField, units::kvarh, units::varh);
+// Instantaneous active power L1 (+P) / L2 / L3 in W resolution
+DEFINE_FIELD(power_delivered_l1_ch, FixedValue, ObisId(1, 1, 21, 7, 0), FixedField, units::kW, units::W);
+DEFINE_FIELD(power_delivered_l2_ch, FixedValue, ObisId(1, 1, 41, 7, 0), FixedField, units::kW, units::W);
+DEFINE_FIELD(power_delivered_l3_ch, FixedValue, ObisId(1, 1, 61, 7, 0), FixedField, units::kW, units::W);
+// Instantaneous active power L1 (-P) / L2 / L3 in W resolution
+DEFINE_FIELD(power_returned_l1_ch, FixedValue, ObisId(1, 1, 22, 7, 0), FixedField, units::kW, units::W);
+DEFINE_FIELD(power_returned_l2_ch, FixedValue, ObisId(1, 1, 42, 7, 0), FixedField, units::kW, units::W);
+DEFINE_FIELD(power_returned_l3_ch, FixedValue, ObisId(1, 1, 62, 7, 0), FixedField, units::kW, units::W);
+// Instantaneous reactive power L1 (+Q) / L2 / L3 in var resolution
+DEFINE_FIELD(reactive_power_delivered_l1_ch, FixedValue, ObisId(1, 1, 23, 7, 0), FixedField, units::kvar, units::var);
+DEFINE_FIELD(reactive_power_delivered_l2_ch, FixedValue, ObisId(1, 1, 43, 7, 0), FixedField, units::kvar, units::var);
+DEFINE_FIELD(reactive_power_delivered_l3_ch, FixedValue, ObisId(1, 1, 63, 7, 0), FixedField, units::kvar, units::var);
+// Instantaneous reactive power L1 (-Q) / L2 / L3 in var resolution
+DEFINE_FIELD(reactive_power_returned_l1_ch, FixedValue, ObisId(1, 1, 24, 7, 0), FixedField, units::kvar, units::var);
+DEFINE_FIELD(reactive_power_returned_l2_ch, FixedValue, ObisId(1, 1, 44, 7, 0), FixedField, units::kvar, units::var);
+DEFINE_FIELD(reactive_power_returned_l3_ch, FixedValue, ObisId(1, 1, 64, 7, 0), FixedField, units::kvar, units::var);
+// Maximum active power demand delivered (+P) with timestamp [kW]
+DEFINE_FIELD(maximum_power_delivered_ch, TimestampedFixedValue, ObisId(1, 1, 1, 6, 0), TimestampedFixedField, units::kW, units::W);
+// Maximum active power demand returned (-P) with timestamp [kW]
+DEFINE_FIELD(maximum_power_returned_ch, TimestampedFixedValue, ObisId(1, 1, 2, 6, 0), TimestampedFixedField, units::kW, units::W);
 
 // Specific fields used for Israel
 // Meter Reading electricity delivered to client (Tariff 1) in 0,001 kWh

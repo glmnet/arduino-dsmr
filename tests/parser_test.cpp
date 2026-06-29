@@ -800,3 +800,173 @@ TEST_CASE_FIXTURE(LogFixture, "ParsedData without any fields") {
   REQUIRE(res);
   REQUIRE(data.all_present());
 }
+
+TEST_CASE_FIXTURE(LogFixture, "Should parse AM550 per-phase active power (1-1:2x/4x/6x.7.0)") {
+  const auto& msg = "/ISK5AM550-1234\r\n"
+                    "\r\n"
+                    "1-1:21.7.0(00.332*kW)\r\n"
+                    "1-1:41.7.0(00.430*kW)\r\n"
+                    "1-1:61.7.0(00.000*kW)\r\n"
+                    "1-1:22.7.0(00.000*kW)\r\n"
+                    "1-1:42.7.0(00.100*kW)\r\n"
+                    "1-1:62.7.0(00.050*kW)\r\n"
+                    "!";
+
+  ParsedData<
+      /* String */ identification,
+      /* FixedValue */ power_delivered_l1_ch,
+      /* FixedValue */ power_delivered_l2_ch,
+      /* FixedValue */ power_delivered_l3_ch,
+      /* FixedValue */ power_returned_l1_ch,
+      /* FixedValue */ power_returned_l2_ch,
+      /* FixedValue */ power_returned_l3_ch>
+      data;
+
+  const auto& res = DsmrParser::parse(data, *DsmrUnencryptedTelegram::from_bytes(msg, false));
+  REQUIRE(res);
+  REQUIRE(data.power_delivered_l1_ch == 0.332f);
+  REQUIRE(data.power_delivered_l2_ch == 0.430f);
+  REQUIRE(data.power_delivered_l3_ch == 0.0f);
+  REQUIRE(data.power_returned_l1_ch == 0.0f);
+  REQUIRE(data.power_returned_l2_ch == 0.100f);
+  REQUIRE(data.power_returned_l3_ch == 0.050f);
+}
+
+TEST_CASE_FIXTURE(LogFixture, "Should parse AM550 per-phase reactive power (1-1:2x/4x/6x.7.0 reactive)") {
+  const auto& msg = "/ISK5AM550-1234\r\n"
+                    "\r\n"
+                    "1-1:23.7.0(00.120*kvar)\r\n"
+                    "1-1:43.7.0(00.080*kvar)\r\n"
+                    "1-1:63.7.0(00.000*kvar)\r\n"
+                    "1-1:24.7.0(00.000*kvar)\r\n"
+                    "1-1:44.7.0(00.010*kvar)\r\n"
+                    "1-1:64.7.0(00.005*kvar)\r\n"
+                    "!";
+
+  ParsedData<
+      /* String */ identification,
+      /* FixedValue */ reactive_power_delivered_l1_ch,
+      /* FixedValue */ reactive_power_delivered_l2_ch,
+      /* FixedValue */ reactive_power_delivered_l3_ch,
+      /* FixedValue */ reactive_power_returned_l1_ch,
+      /* FixedValue */ reactive_power_returned_l2_ch,
+      /* FixedValue */ reactive_power_returned_l3_ch>
+      data;
+
+  const auto& res = DsmrParser::parse(data, *DsmrUnencryptedTelegram::from_bytes(msg, false));
+  REQUIRE(res);
+  REQUIRE(data.reactive_power_delivered_l1_ch == 0.120f);
+  REQUIRE(data.reactive_power_delivered_l2_ch == 0.080f);
+  REQUIRE(data.reactive_power_delivered_l3_ch == 0.0f);
+  REQUIRE(data.reactive_power_returned_l1_ch == 0.0f);
+  REQUIRE(data.reactive_power_returned_l2_ch == 0.010f);
+  REQUIRE(data.reactive_power_returned_l3_ch == 0.005f);
+}
+
+TEST_CASE_FIXTURE(LogFixture, "Should parse AM550 active and reactive energy totals (1-1:1-4.8.0)") {
+  const auto& msg = "/ISK5AM550-1234\r\n"
+                    "\r\n"
+                    "1-1:1.8.0(001234.567*kWh)\r\n"
+                    "1-1:2.8.0(000012.345*kWh)\r\n"
+                    "1-1:3.8.0(000456.789*kvarh)\r\n"
+                    "1-1:4.8.0(000000.000*kvarh)\r\n"
+                    "!";
+
+  ParsedData<
+      /* String */ identification,
+      /* FixedValue */ energy_delivered_ch,
+      /* FixedValue */ energy_returned_ch,
+      /* FixedValue */ total_imported_energy_ch,
+      /* FixedValue */ total_exported_energy_ch>
+      data;
+
+  const auto& res = DsmrParser::parse(data, *DsmrUnencryptedTelegram::from_bytes(msg, false));
+  REQUIRE(res);
+  REQUIRE(data.energy_delivered_ch == 1234.567f);
+  REQUIRE(data.energy_returned_ch == 12.345f);
+  REQUIRE(data.total_imported_energy_ch == 456.789f);
+  REQUIRE(data.total_exported_energy_ch == 0.0f);
+}
+
+TEST_CASE_FIXTURE(LogFixture, "Should parse AM550 active energy total as integer Wh (1-1:1.8.0)") {
+  const auto& msg = "/ISK5AM550-1234\r\n"
+                    "\r\n"
+                    "1-1:1.8.0(001234567*Wh)\r\n"
+                    "!";
+
+  ParsedData</* String */ identification, /* FixedValue */ energy_delivered_ch> data;
+
+  const auto& res = DsmrParser::parse(data, *DsmrUnencryptedTelegram::from_bytes(msg, false));
+  REQUIRE(res);
+  REQUIRE(data.energy_delivered_ch == 1234.567f); // 1234567 Wh = 1234.567 kWh
+}
+
+TEST_CASE_FIXTURE(LogFixture, "Should parse AM550 reactive energy by quadrant with tariffs (1-1:5-8.8.x)") {
+  const auto& msg = "/ISK5AM550-1234\r\n"
+                    "\r\n"
+                    "1-1:5.8.0(000100.000*kvarh)\r\n"
+                    "1-1:5.8.1(000060.000*kvarh)\r\n"
+                    "1-1:5.8.2(000040.000*kvarh)\r\n"
+                    "1-1:6.8.0(000010.000*kvarh)\r\n"
+                    "1-1:6.8.1(000005.000*kvarh)\r\n"
+                    "1-1:6.8.2(000005.000*kvarh)\r\n"
+                    "1-1:7.8.0(000000.000*kvarh)\r\n"
+                    "1-1:7.8.1(000000.000*kvarh)\r\n"
+                    "1-1:7.8.2(000000.000*kvarh)\r\n"
+                    "1-1:8.8.0(000002.500*kvarh)\r\n"
+                    "1-1:8.8.1(000001.000*kvarh)\r\n"
+                    "1-1:8.8.2(000001.500*kvarh)\r\n"
+                    "!";
+
+  ParsedData<
+      /* String */ identification,
+      /* FixedValue */ reactive_energy_q1_ch,
+      /* FixedValue */ reactive_energy_q1_tariff1_ch,
+      /* FixedValue */ reactive_energy_q1_tariff2_ch,
+      /* FixedValue */ reactive_energy_q2_ch,
+      /* FixedValue */ reactive_energy_q2_tariff1_ch,
+      /* FixedValue */ reactive_energy_q2_tariff2_ch,
+      /* FixedValue */ reactive_energy_q3_ch,
+      /* FixedValue */ reactive_energy_q3_tariff1_ch,
+      /* FixedValue */ reactive_energy_q3_tariff2_ch,
+      /* FixedValue */ reactive_energy_q4_ch,
+      /* FixedValue */ reactive_energy_q4_tariff1_ch,
+      /* FixedValue */ reactive_energy_q4_tariff2_ch>
+      data;
+
+  const auto& res = DsmrParser::parse(data, *DsmrUnencryptedTelegram::from_bytes(msg, false));
+  REQUIRE(res);
+  REQUIRE(data.reactive_energy_q1_ch == 100.0f);
+  REQUIRE(data.reactive_energy_q1_tariff1_ch == 60.0f);
+  REQUIRE(data.reactive_energy_q1_tariff2_ch == 40.0f);
+  REQUIRE(data.reactive_energy_q2_ch == 10.0f);
+  REQUIRE(data.reactive_energy_q2_tariff1_ch == 5.0f);
+  REQUIRE(data.reactive_energy_q2_tariff2_ch == 5.0f);
+  REQUIRE(data.reactive_energy_q3_ch == 0.0f);
+  REQUIRE(data.reactive_energy_q3_tariff1_ch == 0.0f);
+  REQUIRE(data.reactive_energy_q3_tariff2_ch == 0.0f);
+  REQUIRE(data.reactive_energy_q4_ch == 2.5f);
+  REQUIRE(data.reactive_energy_q4_tariff1_ch == 1.0f);
+  REQUIRE(data.reactive_energy_q4_tariff2_ch == 1.5f);
+}
+
+TEST_CASE_FIXTURE(LogFixture, "Should parse AM550 maximum power demand with timestamp (1-1:1-2.6.0)") {
+  const auto& msg = "/ISK5AM550-1234\r\n"
+                    "\r\n"
+                    "1-1:1.6.0(250601000000W)(001.234*kW)\r\n"
+                    "1-1:2.6.0(250601120000W)(000.000*kW)\r\n"
+                    "!";
+
+  ParsedData<
+      /* String */ identification,
+      /* TimestampedFixedValue */ maximum_power_delivered_ch,
+      /* TimestampedFixedValue */ maximum_power_returned_ch>
+      data;
+
+  const auto& res = DsmrParser::parse(data, *DsmrUnencryptedTelegram::from_bytes(msg, false));
+  REQUIRE(res);
+  REQUIRE(data.maximum_power_delivered_ch == 1.234f);
+  REQUIRE(data.maximum_power_delivered_ch.timestamp == "250601000000W");
+  REQUIRE(data.maximum_power_returned_ch == 0.0f);
+  REQUIRE(data.maximum_power_returned_ch.timestamp == "250601120000W");
+}
